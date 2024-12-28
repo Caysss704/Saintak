@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MerDaoMining</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* General Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    header {
+      text-align: center;
+      padding: 20px;
+    }
+    header h1 {
+      font-size: 2.5rem;
+      font-weight: 600;
+      color: #FFD700;
+    }
+    main {
+      flex: 1;
+      padding: 10px;
+    }
+    .content {
+      display: none;
+    }
+    .content.active {
+      display: block;
+    }
+    h2 {
+      font-size: 1.8rem;
+      color: #FFD700;
+      margin-bottom: 15px;
+    }
+
+    /* Task List */
+    ul.task-list {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 20px;
+    }
+    ul.task-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding: 15px 20px;
+      background: linear-gradient(145deg, #1c1c1e, #2a2a2d);
+      border-radius: 12px;
+      box-shadow: 4px 4px 10px #0e0e0f, -4px -4px 10px #2e2e31;
+      color: #ffffff;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    ul.task-list li:hover {
+      transform: translateY(-5px);
+      box-shadow: 6px 6px 12px #0e0e0f, -6px -6px 12px #3a3a3d;
+    }
+    ul.task-list li span {
+      flex-grow: 1;
+      margin-right: 20px;
+    }
+    ul.task-list li button {
+      padding: 10px 20px;
+      border: none;
+      background-color: #FFD700;
+      color: #121212;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s, transform 0.3s;
+    }
+    ul.task-list li button:hover {
+      background-color: #e6c300;
+      transform: scale(1.1);
+    }
+
+    /* Dashboard */
+    .mining-container {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .mining-button {
+      width: 150px;
+      height: 150px;
+      background: linear-gradient(145deg, #FFD700, #e6c300);
+      color: #121212;
+      border: none;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      font-weight: bold;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+      box-shadow: 4px 4px 10px #0e0e0f, -4px -4px 10px #2e2e31;
+    }
+    .mining-button:hover {
+      background: #FFC107;
+      transform: translateY(-5px);
+      box-shadow: 6px 6px 12px #0e0e0f, -6px -6px 12px #3a3a3d;
+    }
+    .balance {
+      font-size: 1.5rem;
+      color: #FFD700;
+      margin-top: 15px;
+    }
+    .ping-value {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    .ping-value.red {
+      color: #FF4500;
+    }
+    .ping-value.yellow {
+      color: #FFA500;
+    }
+    .ping-value.green {
+      color: #32CD32;
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      height: 10px;
+      background: #ccc;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0;
+      background-color: #FFD700;
+      border-radius: 5px;
+    }
+
+    /* Profile */
+    .profile-menu {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 20px;
+    }
+    .profile-menu li {
+      margin-bottom: 15px;
+      padding: 10px;
+      background: linear-gradient(145deg, #1c1c1e, #2a2a2d);
+      border-radius: 12px;
+      box-shadow: 4px 4px 10px #0e0e0f, -4px -4px 10px #2e2e31;
+      color: #ffffff;
+    }
+    .profile-menu li button {
+      width: 100%;
+      background: #FFD700;
+      color: #121212;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .profile-menu li button:hover {
+      background: #e6c300;
+      transform: scale(1.05);
+    }
+
+    /* Bottom Navigation */
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #1c1c1e;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
+    }
+    nav a {
+      text-decoration: none;
+      color: #ccc;
+      font-size: 1.2rem;
+      text-align: center;
+      flex-grow: 1;
+    }
+    nav a.active {
+      color: #FFD700;
+    }
+    nav a:hover {
+      color: #ffdd99;
+    }
+    nav i {
+      display: block;
+      font-size: 2.5rem;
+      margin-bottom: 5px;
+    }
+
+    /* Mobile Responsiveness */
+    @media screen and (max-width: 600px) {
+      header h1 {
+        font-size: 1.5rem;
+      }
+      .mining-button {
+        width: 120px;
+        height: 120px;
+      }
+      .balance {
+        font-size: 1.2rem;
+      }
+      .task-list li {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Airdrop Mining Platform</h1>
+  </header>
+  <main>
+    <!-- Dashboard -->
+    <div id="dashboard" class="content active">
+      <h2>Total Balance</h2>
+      <div class="mining-container">
+        <button class="mining-button" id="startMiningBtn">Start Mining</button>
+        <div class="balance" id="balanceDisplay">Total Balance: 0.00</div>
+      </div>
+      <div class="ping-value" id="pingValue">Ping: 20ms</div>
+      <!-- Ping Chart -->
+      <canvas id="pingChart" width="400" height="200"></canvas>
+      <div id="countdown" class="ping-value">Time Remaining: 04:00:00</div>
+    </div>
+
+    <!-- Task List -->
+    <div id="task" class="content">
+      <h2>Task List</h2>
+      <ul class="task-list">
+        <li>
+          <span>Follow Twitter</span>
+          <button>Start</button>
+        </li>
+        <li>
+          <span>Like Twitter</span>
+          <button>Start</button>
+        </li>
+        <li>
+          <span>Tweet</span>
+          <button>Start</button>
+        </li>
+        <li>
+          <span>Join Channel</span>
+          <button>Start</button>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Invite -->
+    <div id="invite" class="content">
+      <h2>Invite Friends</h2>
+      <p>Share your unique invite link: <strong>https://www.airdrop-platform.com/invite/12345</strong></p>
+    </div>
+
+    <!-- Profile -->
+    <div id="profile" class="content">
+      <h2>Profile</h2>
+      <ul class="profile-menu">
+        <li>
+          <button>Contact Us</button>
+        </li>
+        <li>
+          <button>Settings</button>
+        </li>
+        <li>
+          <button>Help Center</button>
+        </li>
+      </ul>
+    </div>
+  </main>
+
+  <nav>
+    <a href="#" id="taskBtn"><i class="fas fa-tasks"></i> Task</a>
+    <a href="#" id="dashboardBtn" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+    <a href="#" id="inviteBtn"><i class="fas fa-user-plus"></i> Invite</a>
+    <a href="#" id="profileBtn"><i class="fas fa-user"></i> Profile</a>
+  </nav>
+
+  <script>
+    const startMiningBtn = document.getElementById('startMiningBtn');
+    const balanceDisplay = document.getElementById('balanceDisplay');
+    const pingValue = document.getElementById('pingValue');
+    const pingChartCanvas = document.getElementById('pingChart');
+    const countdownDisplay = document.getElementById('countdown');
+    const taskBtn = document.getElementById('taskBtn');
+    const dashboardBtn = document.getElementById('dashboardBtn');
+    const inviteBtn = document.getElementById('inviteBtn');
+    const profileBtn = document.getElementById('profileBtn');
+
+    let miningInterval;
+    let totalBalance = parseFloat(localStorage.getItem('totalBalance')) || 0;
+    let isMining = false;
+    let miningTime = parseInt(localStorage.getItem('miningTime')) || 0; 
+    let pingData = [];
+    let pingChart;
+    let miningTimeLeft = parseInt(localStorage.getItem('miningTimeLeft')) || 14400; // 4 hours in seconds
+
+    // Toggle Content Visibility
+    function showContent(id) {
+      document.querySelectorAll('.content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.getElementById(id).classList.add('active');
+    }
+
+    // Start Mining
+    startMiningBtn.addEventListener('click', function() {
+      if (!isMining) {
+        isMining = true;
+        startMiningBtn.innerText = 'Mining...';
+        startMining();
+      } else {
+        return; // Don't allow to stop manually, it'll stop after 4 hours
+      }
+    });
+
+    // Start Mining Process
+    function startMining() {
+      miningTime = 0;
+      balanceDisplay.innerText = `Total Balance: ${totalBalance.toFixed(2)}`;
+      miningInterval = setInterval(() => {
+        miningTime++;
+        totalBalance += 0.0007;
+        balanceDisplay.innerText = `Total Balance: ${totalBalance.toFixed(2)}`;
+
+        // Save balance to localStorage
+        localStorage.setItem('totalBalance', totalBalance.toFixed(2));
+
+        // Decrement time left every second
+        miningTimeLeft--;
+        const hours = Math.floor(miningTimeLeft / 3600);
+        const minutes = Math.floor((miningTimeLeft % 3600) / 60);
+        const seconds = miningTimeLeft % 60;
+        countdownDisplay.innerText = `Time Remaining: ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+        // Save remaining time to localStorage
+        localStorage.setItem('miningTimeLeft', miningTimeLeft);
+
+        // Stop mining after 4 hours (14400 seconds)
+        if (miningTimeLeft <= 0) {
+          stopMining();
+        }
+      }, 1000);
+    }
+
+    // Stop Mining Process
+    function stopMining() {
+      clearInterval(miningInterval);
+      startMiningBtn.innerText = 'Start Mining'; // Reset button to 'Start Mining'
+    }
+
+    // Ping Update Simulation
+    function updatePing() {
+      const randomPing = Math.floor(Math.random() * 100) + 10;
+      pingValue.innerText = `Ping: ${randomPing}ms`;
+
+      // Change color based on ping value
+      if (randomPing <= 40) {
+        pingValue.classList.add('green');
+        pingValue.classList.remove('yellow', 'red');
+      } else if (randomPing <= 80) {
+        pingValue.classList.add('yellow');
+        pingValue.classList.remove('green', 'red');
+      } else {
+        pingValue.classList.add('red');
+        pingValue.classList.remove('green', 'yellow');
+      }
+
+      // Update Ping Data for Chart
+      pingData.push(randomPing);
+      if (pingData.length > 60) {
+        pingData.shift();
+      }
+      pingChart.update();
+    }
+
+    // Create the Ping Chart
+    function createPingChart() {
+      pingChart = new Chart(pingChartCanvas, {
+        type: 'line',
+        data: {
+          labels: Array.from({ length: 60 }, (_, i) => i),
+          datasets: [{
+            label: 'Network Ping (ms)',
+            data: pingData,
+            borderColor: '#FFD700',
+            fill: false,
+            tension: 0.1,
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              ticks: {
+                display: false
+              }
+            },
+            y: {
+              beginAtZero: true,
+              max: 150
+            }
+          },
+        }
+      });
+    }
+
+    // Initial Setup
+    setInterval(updatePing, 1000); 
+    createPingChart();
+    balanceDisplay.innerText = `Total Balance: ${totalBalance.toFixed(2)}`;
+
+    // Navigation Clicks
+    taskBtn.addEventListener('click', function() {
+      showContent('task');
+      updateNav('taskBtn');
+    });
+
+    dashboardBtn.addEventListener('click', function() {
+      showContent('dashboard');
+      updateNav('dashboardBtn');
+    });
+
+    inviteBtn.addEventListener('click', function() {
+      showContent('invite');
+      updateNav('inviteBtn');
+    });
+
+    profileBtn.add
+    profileBtn.addEventListener('click', function() {
+      showContent('profile');
+      updateNav('profileBtn');
+    });
+
+    // Update Navigation Style
+    function updateNav(activeBtnId) {
+      const navLinks = document.querySelectorAll('nav a');
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+      });
+      document.getElementById(activeBtnId).classList.add('active');
+    }
+
+    // Check if mining was in progress and resume if necessary
+    if (miningTimeLeft > 0) {
+      startMiningBtn.innerText = 'Mining...';
+      startMining(); // Start mining if there is remaining time
+    }
+  </script>
+</body>
+</html>
